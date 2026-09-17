@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import { config } from './config'
 import { errorHandler, notFoundHandler } from './middleware/error'
+import { renderApiIndex } from './utils/apiIndex'
 import { apartmentRouter } from './modules/apartment/router'
 import { authRouter } from './modules/auth/router'
 import { billRouter } from './modules/bill/router'
@@ -24,6 +25,14 @@ export function createApp() {
 
   // 上传的图片 / 附件通过静态资源暴露
   app.use('/uploads', express.static(config.uploadDir))
+
+  /**
+   * 根路径：后端是纯 API 服务、没有页面，但开发时直接打开这个地址
+   * 很容易把 404 误判成"服务挂了"或"登录入口"，所以这里返回一份接口索引。
+   */
+  app.get('/', (_req, res) => {
+    res.type('html').send(renderApiIndex())
+  })
 
   // 健康检查：前端启动时用它确认链路是否打通
   app.get('/api/health', (_req, res) => {
