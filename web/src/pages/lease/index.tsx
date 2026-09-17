@@ -1,17 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button, Input, Select, Space, Table, Tabs, Tooltip } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { Download, Plus, ScrollText } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { leaseApi } from '../../api/lease'
+import { viewingApi } from '../../api/viewing'
 import { MoneyText } from '../../components/DataDisplay'
 import { PageCard } from '../../components/Surface'
 import { StatusTag } from '../../components/StatusTag'
 import { usePermission, useTableQuery } from '../../hooks'
 import { LEASE_STATUS, PAY_CYCLE, PROPERTY_TYPE } from '../../utils/constants'
 import { dateText, money } from '../../utils/format'
-import type { Lease, LeaseStatus } from '../../types'
-import CreateLeaseDrawer from './CreateLeaseDrawer'
+import type { Lease, LeaseStatus, PropertyType } from '../../types'
+import CreateLeaseDrawer, { type LeasePrefill } from './CreateLeaseDrawer'
 
 const initialFilters = { keyword: '', status: '', property_type: '' }
 
@@ -31,6 +32,34 @@ export default function LeasesPage() {
   })
   const [createOpen, setCreateOpen] = useState(false)
   const [exporting, setExporting] = useState(false)
+
+  // 由「看房预约 → 转为签约」跳转带入：自动打开新建租约抽屉并预填租客与房源
+  const fromViewingId = Number(params.get('from_viewing') ?? '') || null
+  const rawPropertyType = params.get('property_type')
+  const viewingPropertyType: PropertyType | null =
+    rawPropertyType === 'factory' || rawPropertyType === 'apartment' ? rawPropertyType : null
+  const prefill: LeasePrefill | null = fromViewingId
+    ? {
+        tenant_id: Number(params.get('tenant_id') ?? '') || null,
+        property_type: viewingPropertyType,
+        property_id: Number(params.get('property_id') ?? '') || null,
+      }
+    : null
+
+  useEffect(() => {
+    if (fromViewingId) setCreateOpen(true)
+  }, [fromViewingId])
+
+  /** 清掉看房预约相关参数，避免刷新或返回时再次自动打开抽屉 */
+  const clearViewingParams = () => {
+    if (!fromViewingId) return
+    const next = new URLSearchParams(params)
+    next.delete('from_viewing')
+    next.delete('tenant_id')
+    next.delete('property_type')
+    next.delete('property_id')
+    setParams(next, { replace: true })
+  }
 
   const { list, total, loading, page, pageSize, search, refresh, changePage } = useTableQuery<Lease>({
     fetcher: (p) => leaseApi.list(p),
@@ -299,9 +328,20 @@ export default function LeasesPage() {
 
       <CreateLeaseDrawer
         open={createOpen}
-        onClose={() => setCreateOpen(false)}
+        prefill={prefill}
+        onClose={() => {
+          setCreateOpen(false)
+          clearViewingParams()
+        }}
         onCreated={(id) => {
+          // 来自看房预约时，创建成功后把预约置为「已签约」并关联租约
+          if (fromViewingId) {
+            viewingApi
+              .updateStatus(fromViewingId, 'signed', id)
+              .catch((err) => console.error('[viewing] 回写签约状态失败:', err))
+          }
           refresh()
+          clearViewingParams()
           navigate(`/leases/${id}`)
         }}
       />

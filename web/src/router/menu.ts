@@ -57,7 +57,7 @@ export const MENU_GROUPS: MenuGroup[] = [
       { key: 'apartments', path: '/property/apartments', label: '公寓房源', icon: Building2, module: 'property' },
       { key: 'tenants', path: '/tenants', label: '租客管理', icon: Users, module: 'tenant' },
       { key: 'leases', path: '/leases', label: '租约合同', icon: FileText, module: 'lease' },
-      { key: 'viewings', path: '/viewings', label: '看房预约', icon: CalendarCheck, module: 'viewing', placeholder: true, description: '预约登记与跟进记录' },
+      { key: 'viewings', path: '/viewings', label: '看房预约', icon: CalendarCheck, module: 'viewing', description: '预约登记与跟进记录' },
     ],
   },
   {
@@ -66,7 +66,7 @@ export const MENU_GROUPS: MenuGroup[] = [
     items: [
       { key: 'bills', path: '/finance/bills', label: '账单台账', icon: Wallet, module: 'bill' },
       { key: 'reports', path: '/finance/reports', label: '财务报表', icon: BarChart3, module: 'bill' },
-      { key: 'work-orders', path: '/work-orders', label: '报修工单', icon: Wrench, module: 'workOrder', placeholder: true, description: '派单、维修进度与成本统计' },
+      { key: 'work-orders', path: '/work-orders', label: '报修工单', icon: Wrench, module: 'workOrder', description: '派单、维修进度与成本统计' },
     ],
   },
   {

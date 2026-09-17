@@ -25,10 +25,19 @@ import { PAY_CYCLE } from '../../utils/constants'
 import { money, periodText } from '../../utils/format'
 import type { PlanPreview, PropertyType } from '../../types'
 
+/** 由其他模块跳转带入的预填数据（如看房预约「转为签约」） */
+export interface LeasePrefill {
+  tenant_id?: number | null
+  property_type?: PropertyType | null
+  property_id?: number | null
+}
+
 interface Props {
   open: boolean
   onClose: () => void
   onCreated: (leaseId: number) => void
+  /** 打开抽屉时自动带入的租客与房源，用户仍可修改 */
+  prefill?: LeasePrefill | null
 }
 
 interface FormValues {
@@ -50,7 +59,7 @@ interface FormValues {
  * 第 3 步改动装修抵扣参数时，右侧立刻按每期列出抵扣额与实付租金，
  * 让「装修费抵扣租金」这个核心规则一眼可见，不用等保存后才看到账单。
  */
-export default function CreateLeaseDrawer({ open, onClose, onCreated }: Props) {
+export default function CreateLeaseDrawer({ open, onClose, onCreated, prefill }: Props) {
   const [form] = Form.useForm<FormValues>()
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
@@ -62,21 +71,30 @@ export default function CreateLeaseDrawer({ open, onClose, onCreated }: Props) {
   const { options: factories } = useOptions(() => factoryApi.options(), [open])
   const { options: apartmentRooms } = useOptions(() => apartmentApi.roomOptions(), [open])
 
+  // 拆成原始值作为依赖：调用方每次渲染可能新建 prefill 对象，
+  // 若直接依赖对象会导致抽屉在填写过程中被反复重置。
+  const prefillTenantId = prefill?.tenant_id ?? null
+  const prefillPropertyType = prefill?.property_type ?? null
+  const prefillPropertyId = prefill?.property_id ?? null
+
   useEffect(() => {
     if (!open) return
+    const type = prefillPropertyType ?? 'factory'
     setStep(0)
     setPreview(null)
-    setPropertyType('factory')
+    setPropertyType(type)
     form.resetFields()
     form.setFieldsValue({
-      property_type: 'factory',
+      property_type: type,
       pay_cycle: 'month',
       deposit_amount: 0,
       decoration_total: 0,
       decoration_periods: 0,
       range: [dayjs(), dayjs().add(1, 'year').subtract(1, 'day')] as [Dayjs, Dayjs],
+      ...(prefillTenantId ? { tenant_id: prefillTenantId } : {}),
+      ...(prefillPropertyId ? { properties: [prefillPropertyId] } : {}),
     })
-  }, [open, form])
+  }, [open, form, prefillTenantId, prefillPropertyType, prefillPropertyId])
 
   const propertyOptions = useMemo(() => {
     if (propertyType === 'factory') {

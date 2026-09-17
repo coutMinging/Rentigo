@@ -83,14 +83,6 @@ export const systemApi = {
   readAllNotifications() {
     return http.post<{ success: boolean }>('/system/notifications/read-all')
   },
-
-  // ===== 占位模块（本期只读） =====
-  viewings(params: Record<string, unknown>) {
-    return http.page<Record<string, unknown>>('/system/viewings', params)
-  },
-  workOrders(params: Record<string, unknown>) {
-    return http.page<Record<string, unknown>>('/system/work-orders', params)
-  },
 }
 
 export type { PageResult }

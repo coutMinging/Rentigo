@@ -13,7 +13,9 @@ import LeasesPage from './pages/lease'
 import LeaseDetailPage from './pages/lease/LeaseDetailPage'
 import BillsPage from './pages/finance/BillsPage'
 import ReportsPage from './pages/finance/ReportsPage'
+import ViewingPage from './pages/viewing'
 import PlaceholderPage from './pages/placeholder'
+import WorkOrdersPage from './pages/workOrder'
 import NotificationsPage from './pages/notifications'
 import SettingsPage from './pages/settings'
 
@@ -55,8 +57,8 @@ export default function App() {
           <Route path="/leases/:id" element={<LeaseDetailPage />} />
           <Route path="/finance/bills" element={<BillsPage />} />
           <Route path="/finance/reports" element={<ReportsPage />} />
-          <Route path="/viewings" element={<PlaceholderPage moduleKey="viewing" />} />
-          <Route path="/work-orders" element={<PlaceholderPage moduleKey="workOrder" />} />
+          <Route path="/viewings" element={<ViewingPage />} />
+          <Route path="/work-orders" element={<WorkOrdersPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

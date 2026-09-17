@@ -301,21 +301,37 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(is_read);
 
--- ==================== 八、占位模块（本期仅预留结构） ====================
+-- ==================== 八、看房预约（报修工单仍为预留结构） ====================
 
 CREATE TABLE IF NOT EXISTS viewings (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  tenant_id     INTEGER,                            -- 可选：关联已有租客档案
   tenant_name   TEXT    NOT NULL,
   phone         TEXT    NOT NULL,
-  property_type TEXT    NOT NULL,
+  property_type TEXT    NOT NULL,                   -- factory | apartment
   property_id   INTEGER,
   property_name TEXT,
   appoint_time  TEXT,
   status        TEXT    NOT NULL DEFAULT 'pending', -- pending|appointed|viewed|no_intent|signed
   remark        TEXT,
-  created_at    TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
+  lease_id      INTEGER,                            -- 转为签约后关联的租约
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now','localtime')),
+  updated_at    TEXT    NOT NULL DEFAULT (datetime('now','localtime'))
 );
 CREATE INDEX IF NOT EXISTS idx_viewings_status ON viewings(status);
+CREATE INDEX IF NOT EXISTS idx_viewings_appoint ON viewings(appoint_time);
+
+-- 跟进记录：一条看房预约可多次追加，随预约删除级联清理
+CREATE TABLE IF NOT EXISTS viewing_follow_ups (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  viewing_id   INTEGER NOT NULL,
+  content      TEXT    NOT NULL,
+  follow_up_at TEXT    NOT NULL DEFAULT (datetime('now','localtime')),
+  operator     TEXT,
+  created_at   TEXT    NOT NULL DEFAULT (datetime('now','localtime')),
+  FOREIGN KEY (viewing_id) REFERENCES viewings(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_viewing_follow_ups_viewing ON viewing_follow_ups(viewing_id);
 
 CREATE TABLE IF NOT EXISTS work_orders (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,

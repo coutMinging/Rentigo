@@ -510,3 +510,106 @@ export interface Announcement {
   publisher: string | null
   created_at: string
 }
+
+// ==================== 看房预约 ====================
+
+export type ViewingStatus = 'pending' | 'appointed' | 'viewed' | 'no_intent' | 'signed'
+
+export interface Viewing {
+  id: number
+  /** 可选关联的租客档案 id，手工录入时为 null */
+  tenant_id: number | null
+  tenant_name: string
+  phone: string
+  property_type: PropertyType
+  property_id: number | null
+  property_name: string | null
+  appoint_time: string | null
+  status: ViewingStatus
+  remark: string | null
+  /** 转为签约后关联的租约 id */
+  lease_id: number | null
+  created_at: string
+  updated_at: string
+  follow_up_count: number
+}
+
+export interface ViewingFollowUp {
+  id: number
+  viewing_id: number
+  content: string
+  follow_up_at: string
+  operator: string | null
+  created_at: string
+}
+
+export interface ViewingDetail extends Viewing {
+  follow_ups: ViewingFollowUp[]
+  lease_no: string | null
+}
+
+/** 页头状态统计：忽略状态筛选，仅按其余条件聚合 */
+export interface ViewingStats {
+  pending: number
+  appointed: number
+  viewed: number
+  no_intent: number
+  signed: number
+  total: number
+}
+
+// ==================== 报修工单 ====================
+
+/** 待派单 → 维修中 → 已完工 → 已关闭，已关闭为终态 */
+export type WorkOrderStatus = 'pending' | 'repairing' | 'done' | 'closed'
+
+export interface WorkOrder {
+  id: number
+  order_no: string
+  property_type: PropertyType
+  /** 未关联具体房源时为 null，仅记录业态 */
+  property_id: number | null
+  property_name: string | null
+  reporter: string
+  phone: string | null
+  fault_desc: string
+  /** 故障图片访问路径，形如 /uploads/workorder/xxx.jpg */
+  images: string[]
+  status: WorkOrderStatus
+  /** 维修人员，派单后必填 */
+  assignee: string | null
+  /** 维修费用（元） */
+  cost: number
+  /** 最近一次维修进度说明 */
+  progress: string | null
+  finish_remark: string | null
+  created_at: string
+  updated_at: string
+}
+
+/** 列表页页头统计：忽略状态筛选聚合，保证切换状态时其余数字仍有参考意义 */
+export interface WorkOrderStats {
+  pending: number
+  repairing: number
+  done: number
+  closed: number
+  total: number
+  /** 累计维修费用 */
+  total_cost: number
+  /** 本月新增工单数 */
+  month_new: number
+}
+
+/** 按房源聚合的维修统计 */
+export interface WorkOrderPropertyStat {
+  property_type: PropertyType
+  property_id: number | null
+  property_name: string | null
+  /** 维修次数 */
+  order_count: number
+  /** 未完工数（待派单 + 维修中） */
+  open_count: number
+  /** 累计维修费用 */
+  total_cost: number
+}
+

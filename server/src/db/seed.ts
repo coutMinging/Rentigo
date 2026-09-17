@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs'
 import { db } from './index'
 import { isEmptyDatabase, migrate } from './migrate'
 import { buildBillPlan } from '../utils/billing'
-import { makeApartmentCode, makeBillNo, makeFactoryCode, makeLeaseNo } from '../utils/id'
+import { makeApartmentCode, makeBillNo, makeFactoryCode, makeLeaseNo, makeWorkOrderNo } from '../utils/id'
 import { config } from '../config'
 
 // ==================== 日期工具 ====================
@@ -103,6 +103,7 @@ export function seed(): void {
     seedApartments()
     seedTenantsAndLeases()
     syncPropertyStatus()
+    seedWorkOrders()
   })
 
   runAll()
@@ -922,6 +923,161 @@ function syncPropertyStatus(): void {
     if (row.property_type === 'factory') updateFactory.run(row.property_id)
     else updateApartment.run(row.property_id)
   }
+}
+
+// ---------- 报修工单 ----------
+
+interface WorkOrderSeed {
+  propertyType: 'factory' | 'apartment'
+  /** 关联房源的种子下标，null 表示暂未关联到具体房源 */
+  propertyIndex: number | null
+  reporter: string
+  phone: string
+  faultDesc: string
+  images: string[]
+  status: 'pending' | 'repairing' | 'done' | 'closed'
+  assignee: string | null
+  cost: number
+  progress: string | null
+  finishRemark: string | null
+  /** 相对今天的天数偏移（负数表示若干天前报修），让列表时间分布更真实 */
+  dayOffset: number
+}
+
+const WORK_ORDER_SEED: WorkOrderSeed[] = [
+  {
+    propertyType: 'factory',
+    propertyIndex: 0,
+    reporter: '陈建国',
+    phone: '13905710001',
+    faultDesc: '车间 3 号行车限位开关失灵，起升到顶后无法自动断电，存在安全隐患，请尽快安排检修。',
+    images: [],
+    status: 'pending',
+    assignee: null,
+    cost: 0,
+    progress: null,
+    finishRemark: null,
+    dayOffset: -1,
+  },
+  {
+    propertyType: 'factory',
+    propertyIndex: 4,
+    reporter: '赵敏',
+    phone: '13905710003',
+    faultDesc: '装卸月台西侧卷帘门升降卡顿，运行中有明显异响，已影响夜间发货效率。',
+    images: [],
+    status: 'repairing',
+    assignee: '王建国（机电班）',
+    cost: 0,
+    progress: '已到场排查，判断为链条导轨变形，配件今日到货后更换。',
+    finishRemark: null,
+    dayOffset: -3,
+  },
+  {
+    propertyType: 'apartment',
+    propertyIndex: 5,
+    reporter: '林婉清',
+    phone: '13905710006',
+    faultDesc: '房间空调制冷效果差，出风口温度偏高，压缩机频繁启停。',
+    images: [],
+    status: 'repairing',
+    assignee: '李海峰（空调维保）',
+    cost: 0,
+    progress: '已更换启动电容，待补充制冷剂后复测。',
+    finishRemark: null,
+    dayOffset: -5,
+  },
+  {
+    propertyType: 'apartment',
+    propertyIndex: 4,
+    reporter: '周晓东',
+    phone: '13905710005',
+    faultDesc: '卫生间地漏返味严重，洗浴后积水下排缓慢。',
+    images: [],
+    status: 'done',
+    assignee: '张建平（水电班）',
+    cost: 180,
+    progress: '更换防臭地漏芯并疏通主管道。',
+    finishRemark: '现场测试排水通畅，已请租客签字确认。',
+    dayOffset: -8,
+  },
+  {
+    propertyType: 'factory',
+    propertyIndex: 3,
+    reporter: '孙立军',
+    phone: '13905710004',
+    faultDesc: '厂房西侧外墙雨水管接口渗漏，雨水沿墙面渗入，导致内墙受潮发霉。',
+    images: [],
+    status: 'closed',
+    assignee: '外协单位：宏达防水',
+    cost: 2600,
+    progress: '采用高压注浆封堵接口并重做外墙防水层。',
+    finishRemark: '完工后经两场降雨观察无渗漏，验收合格并归档。',
+    dayOffset: -20,
+  },
+]
+
+function seedWorkOrders(): void {
+  const factories = db.prepare('SELECT id, name FROM factories ORDER BY id').all() as Array<{
+    id: number
+    name: string
+  }>
+  const apartments = db.prepare('SELECT id, code FROM apartments ORDER BY id').all() as Array<{
+    id: number
+    code: string
+  }>
+
+  const insert = db.prepare(`
+    INSERT INTO work_orders (
+      order_no, property_type, property_id, property_name,
+      reporter, phone, fault_desc, images, status, assignee, cost, progress, finish_remark,
+      created_at, updated_at
+    ) VALUES (
+      @orderNo, @propertyType, @propertyId, @propertyName,
+      @reporter, @phone, @faultDesc, @images, @status, @assignee, @cost, @progress, @finishRemark,
+      @createdAt, @createdAt
+    )
+  `)
+
+  WORK_ORDER_SEED.forEach((item, index) => {
+    let propertyId: number | null = null
+    let propertyName: string | null = null
+
+    if (item.propertyIndex !== null) {
+      if (item.propertyType === 'factory') {
+        const target = factories[item.propertyIndex]
+        if (target) {
+          propertyId = target.id
+          propertyName = target.name
+        }
+      } else {
+        const target = apartments[item.propertyIndex]
+        if (target) {
+          propertyId = target.id
+          propertyName = `${target.code} 房间`
+        }
+      }
+    }
+
+    const createdAt = `${addDays(todayStr(), item.dayOffset)} 09:30:00`
+
+    insert.run({
+      orderNo: makeWorkOrderNo(index + 1),
+      propertyType: item.propertyType,
+      propertyId,
+      propertyName,
+      reporter: item.reporter,
+      phone: item.phone,
+      faultDesc: item.faultDesc,
+      images: JSON.stringify(item.images),
+      status: item.status,
+      assignee: item.assignee,
+      cost: item.cost,
+      progress: item.progress,
+      finishRemark: item.finishRemark,
+      createdAt,
+    } as never)
+  })
 }
 
 // ---------- 直接执行入口 ----------

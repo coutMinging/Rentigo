@@ -423,27 +423,3 @@ systemRouter.post('/notifications/read-all', (_req, res) => {
   db.prepare('UPDATE notifications SET is_read = 1 WHERE is_read = 0').run()
   ok(res, { success: true })
 })
-
-// ==================== 占位模块（本期只读，结构已预留） ====================
-
-systemRouter.get('/viewings', requirePermission('viewing', 'view'), (req, res) => {
-  const { page, pageSize, offset } = parsePageQuery(
-    req.query as Record<string, unknown>,
-    config.defaultPageSize,
-    config.maxPageSize,
-  )
-  const total = db.prepare('SELECT COUNT(*) AS c FROM viewings').get() as { c: number }
-  const list = getAll('SELECT * FROM viewings ORDER BY id DESC LIMIT ? OFFSET ?', [pageSize, offset])
-  ok(res, { list, total: total.c, page, pageSize })
-})
-
-systemRouter.get('/work-orders', requirePermission('workOrder', 'view'), (req, res) => {
-  const { page, pageSize, offset } = parsePageQuery(
-    req.query as Record<string, unknown>,
-    config.defaultPageSize,
-    config.maxPageSize,
-  )
-  const total = db.prepare('SELECT COUNT(*) AS c FROM work_orders').get() as { c: number }
-  const list = getAll('SELECT * FROM work_orders ORDER BY id DESC LIMIT ? OFFSET ?', [pageSize, offset])
-  ok(res, { list, total: total.c, page, pageSize })
-})

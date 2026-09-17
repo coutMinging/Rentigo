@@ -8,7 +8,7 @@
 
 ## 功能范围
 
-### 本期已交付（核心 5 模块）
+### 本期已交付（核心 6 模块）
 
 | 模块 | 主要能力 |
 | --- | --- |
@@ -17,10 +17,10 @@
 | **租客管理** | 个人/企业两类档案；标签由租约与账单自动推导（已签约/待续租/欠费），无需人工维护；自动关联名下房源与租约历史 |
 | **租约合同** | 多房源关联；**装修费抵扣租金**实时试算与自动核算；按缴费周期自动生成全部期次账单；到期预警；退租结算（押金抵扣、水电结算、应退应补）；合同在线预览与打印导出 PDF |
 | **财务账单** | 账单台账（逾期整行高亮）、追加水电/车位/违约金、收款登记（支持部分收款）、欠费明细、押金台账、业态分离报表、Excel 导出 |
+| **看房预约** | 登记看房需求（可选关联租客档案）；状态流转 待确认 → 已预约 → 已看房 → 无意向 / 转为签约；多次跟进记录时间线；按状态、业态、预约时间段筛选与统计；台账导出；「转为签约」跳转新建租约并预填租客与房源 |
 
 ### 下阶段预留（菜单已就绪，数据表与只读接口已建好）
 
-- 看房预约管理（`viewings` 表）
 - 报修工单管理（`work_orders` 表）
 
 ---
@@ -112,7 +112,7 @@ npm run dev:server
 │       ├── db/                   # schema.sql / 幂等迁移 / 种子数据
 │       ├── middleware/           # 鉴权、权限、统一错误处理、文件上传
 │       ├── jobs/scheduler.ts     # 逾期与到期状态流转、站内消息生成
-│       ├── modules/              # 业务模块（auth/factory/apartment/tenant/lease/bill/dashboard/system）
+│       ├── modules/              # 业务模块（auth/factory/apartment/tenant/lease/bill/viewing/dashboard/system）
 │       └── utils/                # billing 核算核心、excel 导出、contract 合同渲染等
 └── web/                          # 前端
     ├── vite.config.ts            # @ 别名 + /api、/uploads 代理
@@ -205,6 +205,11 @@ POST   /api/leases/preview          装修抵扣试算（不落库）
 POST   /api/leases                  新建租约（自动生成账单）
 POST   /api/leases/:id/settlement   退租结算试算
 GET    /api/leases/:id/contract     合同 HTML
+GET    /api/viewings                看房预约台账（筛选 + 状态统计）
+POST   /api/viewings                登记看房预约
+POST   /api/viewings/:id/follow-ups 追加跟进记录
+PUT    /api/viewings/:id/status     看房状态流转（转为签约时关联租约）
+GET    /api/viewings/export         看房台账导出
 GET    /api/bills                   账单台账
 POST   /api/bills/:id/payments      登记收款（支持部分收款）
 GET    /api/bills/reports           业态分离报表
@@ -216,7 +221,7 @@ GET    /api/system/logs             操作日志
 ## 已知限制与后续规划
 
 1. **图片/附件上传**：`multer` 与上传接口已就绪，页面暂未接入上传控件，房源图片与租客证件目前为空。
-2. **看房预约与报修工单**：数据表与只读接口已建好，界面为占位框架页，可在现有骨架上直接开发。
+2. **报修工单**：数据表与只读接口已建好，界面为占位框架页，可在现有骨架上直接开发。
 3. **短信与电子签章**：系统设置中已预留开关，接入第三方时补充 `notifications` 的发送适配层即可。
 4. **单机部署**：SQLite 与内存定时任务适合单机后台。若多实例部署，需将 SQLite 换成 PostgreSQL 并把定时任务外置。
 

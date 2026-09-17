@@ -11,6 +11,9 @@ import { factoryRouter } from './modules/factory/router'
 import { leaseRouter } from './modules/lease/router'
 import { systemRouter } from './modules/system/router'
 import { tenantRouter } from './modules/tenant/router'
+import { uploadRouter } from './modules/upload/router'
+import { viewingRouter } from './modules/viewing/router'
+import { workOrderRouter } from './modules/work_order/router'
 
 /**
  * 创建 Express 应用实例。
@@ -44,6 +47,7 @@ export function createApp() {
   })
 
   // ===== 业务模块 =====
+  app.use('/api/uploads', uploadRouter)
   app.use('/api/auth', authRouter)
   app.use('/api/factories', factoryRouter)
   app.use('/api/apartments', apartmentRouter)
@@ -51,6 +55,8 @@ export function createApp() {
   app.use('/api/leases', leaseRouter)
   app.use('/api/bills', billRouter)
   app.use('/api/dashboard', dashboardRouter)
+  app.use('/api/viewings', viewingRouter)
+  app.use('/api/work-orders', workOrderRouter)
   app.use('/api/system', systemRouter)
 
   app.use(notFoundHandler)

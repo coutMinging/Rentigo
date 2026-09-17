@@ -5,7 +5,7 @@ import { PageCard, SectionTitle } from '../../components/Surface'
 
 /**
  * 占位模块框架页。
- * 本期只交付核心 5 模块，看房预约与报修工单的数据表已建好，
+ * 报修工单尚未开发，其数据表与只读接口已就绪，
  * 这里明确列出规划功能与已就绪的数据结构，便于下一阶段直接开工。
  */
 const MODULE_CONTENT: Record<
@@ -17,17 +17,6 @@ const MODULE_CONTENT: Record<
     ready: string[]
   }
 > = {
-  viewing: {
-    title: '看房预约管理',
-    subtitle: '登记看房需求、跟进议价与转签约，记录永久存档',
-    planned: [
-      '手动登记看房需求：选择房源、预约时间、租客联系方式与需求备注',
-      '看房状态流转：待确认 → 已预约 → 已看房 → 无意向 / 转为签约',
-      '录入跟进记录：议价过程、装修抵扣洽谈、租期沟通等',
-      '全部看房记录支持查询与导出',
-    ],
-    ready: ['viewings 数据表已建好（含状态、预约时间、备注字段）', '只读列表接口 GET /api/system/viewings 已可用'],
-  },
   workOrder: {
     title: '报修工单管理',
     subtitle: '从报修受理到完工关闭的闭环管理，统计维修频次与成本',
@@ -60,7 +49,6 @@ export default function PlaceholderPage({ moduleKey }: { moduleKey: string }) {
           </h1>
           <p className="mt-3 text-[14px] leading-6 text-[#6E6E73]">{content.subtitle}</p>
           <p className="mt-5 text-[13px] leading-6 text-[#86868B]">
-            本期优先交付房源、租客、租约、财务与看板五个核心模块。
             该模块的数据库结构与只读接口已经就绪，界面开发可以直接在现有骨架上继续。
           </p>
           <div className="mt-7 flex gap-3">

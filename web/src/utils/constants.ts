@@ -1,4 +1,4 @@
-import type { BillStatus, FactoryStatus, ApartmentStatus, LeaseStatus, PropertyType, PayCycle, TenantTag } from '../types'
+import type { BillStatus, FactoryStatus, ApartmentStatus, LeaseStatus, PropertyType, PayCycle, TenantTag, ViewingStatus, WorkOrderStatus } from '../types'
 
 /** 状态标签的文案与配色，全站统一，保证同一种状态在任何页面颜色一致 */
 
@@ -41,6 +41,38 @@ export const TENANT_TAG: Record<TenantTag, StatusMeta> = {
   signed: { label: '已签约租客', tone: 'success' },
   arrears: { label: '欠费租客', tone: 'danger' },
   renew: { label: '待续租租客', tone: 'warning' },
+}
+
+export const VIEWING_STATUS: Record<ViewingStatus, StatusMeta> = {
+  pending: { label: '待确认', tone: 'default' },
+  appointed: { label: '已预约', tone: 'processing' },
+  viewed: { label: '已看房', tone: 'purple' },
+  no_intent: { label: '无意向', tone: 'warning' },
+  signed: { label: '已签约', tone: 'success' },
+}
+
+export const WORK_ORDER_STATUS: Record<WorkOrderStatus, StatusMeta> = {
+  pending: { label: '待派单', tone: 'default' },
+  repairing: { label: '维修中', tone: 'processing' },
+  done: { label: '已完工', tone: 'success' },
+  closed: { label: '已关闭', tone: 'default' },
+}
+
+/** 工单允许的流转关系，与后端 TRANSITIONS 白名单保持一致，用于前端过滤可选目标状态 */
+export const WORK_ORDER_TRANSITIONS: Record<WorkOrderStatus, WorkOrderStatus[]> = {
+  pending: ['repairing', 'closed'],
+  repairing: ['done'],
+  done: ['closed'],
+  closed: [],
+}
+
+/** 允许的看房状态流转，与服务端白名单保持一致，前端据此渲染可用动作 */
+export const VIEWING_TRANSITIONS: Record<ViewingStatus, ViewingStatus[]> = {
+  pending: ['appointed', 'no_intent'],
+  appointed: ['viewed', 'no_intent'],
+  viewed: ['signed', 'no_intent'],
+  no_intent: ['appointed'],
+  signed: [],
 }
 
 export const PROPERTY_TYPE: Record<PropertyType, string> = {
