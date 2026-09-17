@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import bcrypt from 'bcryptjs'
 import { db } from './index'
 import { isEmptyDatabase, migrate } from './migrate'
@@ -85,11 +86,22 @@ const PERMISSION_SETS = {
 
 // ==================== 主流程 ====================
 
+/**
+ * 启动时的数据初始化，分两条路径：
+ *   · SEED_DEMO 开启（开发默认）→ 写入完整演示数据，便于直接体验各模块
+ *   · SEED_DEMO 关闭（生产默认）→ 只建角色、基础参数与一个管理员账号
+ * 两条路径都只在「空库」时执行，不会覆盖已有的真实数据。
+ */
 export function seed(): void {
   migrate()
 
   if (!isEmptyDatabase()) {
-    console.log('[db] 已存在数据，跳过种子写入（如需重置请删除 server/data/app.db*）')
+    console.log('[db] 已存在数据，跳过初始化（如需重置请删除 server/data/app.db*）')
+    return
+  }
+
+  if (!config.seedDemoData) {
+    seedBaseData()
     return
   }
 
@@ -111,9 +123,51 @@ export function seed(): void {
   console.log('[db] 默认账号：admin / finance / ops，密码均为 123456')
 }
 
+/**
+ * 正式环境初始化：不写入任何演示业务数据，只保证「能登录、有基础参数」。
+ * 空库时若不建管理员，系统将没有任何账号可登录。
+ */
+function seedBaseData(): void {
+  console.log('[db] 演示数据已关闭，仅初始化角色、基础参数与管理员账号')
+
+  db.transaction(() => {
+    const roleIds = seedRoles()
+    seedSettings()
+
+    const username = config.adminUsername
+    // 未显式配置密码时生成随机密码，避免正式库里留下 123456 这类弱口令
+    const plainPassword = config.adminPassword || randomPassword()
+
+    db.prepare(
+      'INSERT INTO users (username, password, real_name, phone, role_id, status) VALUES (?, ?, ?, ?, ?, ?)',
+    ).run(
+      username,
+      bcrypt.hashSync(plainPassword, 10),
+      '系统管理员',
+      null,
+      roleIds.admin,
+      'active',
+    )
+
+    if (config.adminPassword) {
+      console.log(`[db] 管理员账号已创建：${username}（密码取自 ADMIN_PASSWORD）`)
+    } else {
+      console.log(`[db] 管理员账号已创建：${username}`)
+      console.log(`[db] 随机初始密码（仅显示这一次，请登录后立即修改）：${plainPassword}`)
+    }
+  })()
+}
+
+/** 生成一次性随机密码；剔除了 0/O/1/l/I 等易混淆字符 */
+function randomPassword(length = 14): string {
+  const charset = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789'
+  return Array.from(randomBytes(length), (byte) => charset[byte % charset.length]).join('')
+}
+
 // ---------- 角色与账号 ----------
 
-function seedRolesAndUsers(): void {
+/** 写入三个预设角色并返回角色 id，供建账号时复用 */
+function seedRoles(): { admin: number; finance: number; ops: number } {
   const insertRole = db.prepare(
     'INSERT INTO roles (name, code, permissions, is_preset, remark) VALUES (?, ?, ?, 1, ?)',
   )
@@ -139,14 +193,21 @@ function seedRolesAndUsers(): void {
     ).lastInsertRowid,
   )
 
+  return { admin: adminRoleId, finance: financeRoleId, ops: opsRoleId }
+}
+
+/** 演示环境：三个角色各配一个体验账号 */
+function seedRolesAndUsers(): void {
+  const roleIds = seedRoles()
+
   const hash = bcrypt.hashSync('123456', 10)
   const insertUser = db.prepare(
     'INSERT INTO users (username, password, real_name, phone, role_id, status) VALUES (?, ?, ?, ?, ?, ?)',
   )
 
-  insertUser.run('admin', hash, '系统管理员', '13800000001', adminRoleId, 'active')
-  insertUser.run('finance', hash, '李财务', '13800000002', financeRoleId, 'active')
-  insertUser.run('ops', hash, '王运维', '13800000003', opsRoleId, 'active')
+  insertUser.run('admin', hash, '系统管理员', '13800000001', roleIds.admin, 'active')
+  insertUser.run('finance', hash, '李财务', '13800000002', roleIds.finance, 'active')
+  insertUser.run('ops', hash, '王运维', '13800000003', roleIds.ops, 'active')
 }
 
 // ---------- 系统参数 ----------
