@@ -45,6 +45,13 @@ server/uploads/
 # ===== 需求文档（本地保留，不入库）=====
 厂房及公寓楼出租管理系统PC端需求文档.docx
 
+# ===== 端到端验证产物（playwright 快照、截图、临时脚本）=====
+.playwright-cli/
+playwright-report/
+test-results/
+.tmp-*
+*.e2e-*.js
+
 # ===== 编辑器 / IDE =====
 .vscode/*
 !.vscode/extensions.json

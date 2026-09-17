@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="16" fill="#1D1D1F" />
+  <text
+    x="50%"
+    y="54%"
+    dominant-baseline="middle"
+    text-anchor="middle"
+    font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif"
+    font-size="26"
+    font-weight="600"
+    fill="#FFFFFF"
+  >FA</text>
+</svg>

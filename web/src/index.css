@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    background: #ffffff;
+  }
+
+  body {
+    font-family:
+      -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'PingFang SC',
+      'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+    color: #1d1d1f;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.003em;
+  }
+
+  /* 标题用更紧的字距，模仿苹果排版 */
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.02em;
+  }
+
+  /* 细滚动条，贴近 macOS 观感 */
+  ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.14);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.26);
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer components {
+  /* 纯白卡片：靠发丝线与极轻阴影建立层级，而不是色块 */
+  .surface {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 18px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transition:
+      box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .surface-hover:hover {
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.05),
+      0 16px 40px rgba(0, 0, 0, 0.07);
+    transform: translateY(-2px);
+  }
+
+  /* 顶栏毛玻璃 */
+  .frosted {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+
+  /* 发丝分隔线 */
+  .hairline-b {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .hairline-r {
+    border-right: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  /* 主色渐变文字（用于欢迎区标题） */
+  .text-gradient {
+    background: linear-gradient(135deg, #1d1d1f 0%, #4a4a52 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+@layer utilities {
+  .animate-rise {
+    animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-fade {
+    animation: fade 0.4s ease-out both;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===== antd 细节微调：去掉重色块与多余边框 ===== */
+
+/* 表格最后一行去掉下边框，减少视觉噪音 */
+.ant-table-tbody > tr:last-child > td {
+  border-bottom: none !important;
+}
+
+/* 表头做成"标签"感：字号收小、字重变轻、加字距 */
+.ant-table-thead > tr > th {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.03em;
+  text-transform: none;
+}
+
+/* 输入类控件去掉默认内阴影 */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-picker,
+.ant-select-selector {
+  box-shadow: none !important;
+}
+
+/* 内联菜单去掉右侧分割线 */
+.ant-menu-light.ant-menu-root.ant-menu-inline {
+  border-inline-end: none !important;
+}
+
+/* 卡片默认无边框 */
+.ant-card {
+  border: none;
+}
+
+/* 按钮去掉发光 */
+.ant-btn-primary {
+  box-shadow: none !important;
+}
+
+/* 表格在卡片内的滚动条留白 */
+.ant-table-wrapper .ant-table {
+  background: transparent;
+}
