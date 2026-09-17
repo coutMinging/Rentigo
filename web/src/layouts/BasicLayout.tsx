@@ -7,6 +7,7 @@ import { feedback } from '../api/feedback'
 import { useAuthStore } from '../store/auth'
 import type { AppNotification } from '../types'
 import { MENU_GROUPS } from '../router/menu'
+import { Brand } from '../components/Logo'
 import { cn } from '../utils/cn'
 import { dateTimeText, initialOf } from '../utils/format'
 import ChangePasswordModal from '../pages/settings/ChangePasswordModal'
@@ -148,17 +149,7 @@ export default function BasicLayout() {
           className="flex shrink-0 items-center gap-2.5 px-5"
           style={{ height: HEADER_HEIGHT }}
         >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-[#1D1D1F] text-[13px] font-semibold text-white">
-            FA
-          </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <p className="truncate text-[13.5px] font-semibold leading-4 text-[#1D1D1F]">
-                厂房公寓租赁
-              </p>
-              <p className="truncate text-[11px] leading-4 text-[#86868B]">管理系统</p>
-            </div>
-          )}
+          <Brand size={30} markOnly={collapsed} subtitle="租赁管理系统" />
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2 pb-4">

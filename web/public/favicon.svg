@@ -1,13 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="16" fill="#1D1D1F" />
-  <text
-    x="50%"
-    y="54%"
-    dominant-baseline="middle"
-    text-anchor="middle"
-    font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif"
-    font-size="26"
-    font-weight="600"
-    fill="#FFFFFF"
-  >FA</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <rect width="48" height="48" rx="13.5" fill="#1D1D1F" />
+  <g fill="none" stroke="#FFFFFF" stroke-width="4.86" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M15.47 12.12V33.07" />
+    <path d="M15.47 12.12h7.45a6.48 6.48 0 0 1 0 12.96h-7.45" />
+    <path d="M22.92 25.08L32.64 34.8" />
+  </g>
 </svg>

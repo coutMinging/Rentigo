@@ -162,3 +162,43 @@
 .ant-table-wrapper .ant-table {
   background: transparent;
 }
+
+/*
+  固定列兜底：sticky 单元格必须有实底。
+  主题里已把 headerBg / rowHoverBg 改成不透明，这里再兜一层，
+  避免以后有人改回 transparent 时重现"表头文字重叠"。
+  注意：不写 !important，让 :hover 与选中态（antd 选择器权重更高）照常覆盖。
+*/
+.ant-table-thead > tr > th.ant-table-cell-fix-left,
+.ant-table-thead > tr > th.ant-table-cell-fix-right,
+.ant-table-tbody > tr > td.ant-table-cell-fix-left,
+.ant-table-tbody > tr > td.ant-table-cell-fix-right {
+  background: #ffffff;
+}
+
+/*
+  登录页表单的输入框边界。
+  主题里的 colorBorder 是 rgba(0,0,0,0.08) 发丝线，那是给卡片、表格用的；
+  用在输入框上，纯白底 + 去掉内阴影之后边界几乎"消失"，控件像浮在半空。
+  这里只在登录页把边界提到肉眼可辨的强度，其余页面不受影响。
+  !important 是为了盖过上面那条「输入类控件去掉默认内阴影」的全局规则。
+*/
+.login-form .ant-input,
+.login-form .ant-input-affix-wrapper {
+  border-color: rgba(0, 0, 0, 0.14);
+  background: #ffffff;
+}
+.login-form .ant-input:hover,
+.login-form .ant-input-affix-wrapper:hover {
+  border-color: rgba(0, 0, 0, 0.26);
+}
+.login-form .ant-input:focus,
+.login-form .ant-input-affix-wrapper-focused {
+  border-color: #1f2437;
+  box-shadow: 0 0 0 3px rgba(31, 36, 55, 0.08) !important;
+}
+
+/* 标签加重一档，与 15px 的输入内容形成稳定的"标签—值"对照 */
+.login-form .ant-form-item-label > label {
+  font-weight: 500;
+}

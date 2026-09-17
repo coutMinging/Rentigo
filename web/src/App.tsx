@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { Spin } from 'antd'
+import { LogoMark } from './components/Logo'
 import BasicLayout from './layouts/BasicLayout'
 import { useAuthStore } from './store/auth'
 import LoginPage from './pages/login'
@@ -21,11 +22,9 @@ function BootScreen() {
   return (
     <div className="flex h-screen items-center justify-center bg-white">
       <div className="flex flex-col items-center gap-4">
-        <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#1D1D1F] text-[15px] font-semibold text-white">
-          FA
-        </div>
+        <LogoMark size={44} />
         <Spin size="small" />
-        <p className="text-[13px] text-[#86868B]">正在加载厂房及公寓楼出租管理系统…</p>
+        <p className="text-[13px] text-[#86868B]">正在加载 Rentigo…</p>
       </div>
     </div>
   )

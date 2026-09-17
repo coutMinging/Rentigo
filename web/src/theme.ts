@@ -98,16 +98,27 @@ export const antdTheme: ThemeConfig = {
       headerFontSize: 15,
       headerHeight: 52,
     },
+    /*
+      表格所有背景色都必须写成「不透明」值，不能给 transparent / rgba。
+      原因：固定列是用 position: sticky 实现的，sticky 单元格需要自带不透明底色
+      才能遮住横向滚动时从下面滑过的其他单元格；一旦透明，下层文字就会透上来，
+      表现为表头文字重叠。
+      下面这几个值在纯白卡片上的观感与原透明方案完全一致：
+        #FFFFFF = 原来的 transparent
+        #FAFAFA = 原来的 rgba(0,0,0,0.018) 叠在白底上的等效实色
+    */
     Table: {
-      headerBg: 'transparent',
+      headerBg: '#FFFFFF',
       headerColor: '#86868B',
       headerSplitColor: 'transparent',
       borderColor: 'rgba(0,0,0,0.05)',
-      rowHoverBg: 'rgba(0,0,0,0.018)',
+      rowHoverBg: '#FAFAFA',
+      rowSelectedBg: '#F5F6F8',
+      rowSelectedHoverBg: '#EFF1F4',
       cellPaddingBlock: 14,
       cellPaddingInline: 16,
       headerBorderRadius: 0,
-      footerBg: 'transparent',
+      footerBg: '#FFFFFF',
       expandIconBg: '#FFFFFF',
     },
     Button: {
