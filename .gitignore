@@ -31,6 +31,9 @@ server/data/*.db-shm
 server/data/*.sqlite
 server/data/*.sqlite3
 
+# ===== 本地备份快照（含真实业务数据且体积大，不入库）=====
+server/data/backups/
+
 # ===== 用户上传的文件（图片、身份证、营业执照、协议附件）=====
 server/data/uploads/
 server/uploads/

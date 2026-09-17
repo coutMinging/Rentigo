@@ -1,0 +1,12 @@
+# 统一换行符策略
+#
+# 背景：在 Windows 上编辑的文本文件若带 CRLF，放到 Linux 服务器上会出问题：
+#   · install.sh        → bash 报 "$'\r': command not found"
+#   · *.service         → systemd 把 "production\r" 当成环境变量值，启动失败
+#   · nginx.conf        → 指令值里混入 \r，nginx 可能解析异常
+# 因此对这些文件强制使用 LF，且不做本地换行转换。
+
+*.sh                 text eol=lf
+deploy/*.service     text eol=lf
+deploy/*.conf        text eol=lf
+server/.env.example  text eol=lf

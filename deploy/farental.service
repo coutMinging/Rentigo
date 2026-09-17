@@ -1,0 +1,46 @@
+; ============================================================
+; 厂房及公寓楼出租管理系统 · systemd 服务
+;
+; 一般不用手工改这个文件：deploy/install.sh 会自动替换下面的
+; User / Group / WorkingDirectory 并安装到 /etc/systemd/system/
+;
+; 常用命令：
+;   systemctl status farental     查看状态
+;   systemctl restart farental    重启
+;   systemctl stop farental       停止
+;   journalctl -u farental -f     实时看日志
+; ============================================================
+
+[Unit]
+Description=厂房及公寓楼出租管理系统（API + 前端托管）
+# 等网络就绪再启动。只写 network.target 时，开机瞬间可能出现端口未就绪
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=farental
+Group=farental
+WorkingDirectory=/opt/farental/server
+
+# 敏感配置（JWT_SECRET 等）放在 /opt/farental/server/.env，由程序自行读取。
+# 生产模式也在这里声明一份，避免 .env 丢失时以开发模式静默启动。
+Environment=NODE_ENV=production
+
+# 用 node --import tsx 直接运行 TS，省掉一层编译产物。
+# 这里写 /usr/bin/env 是为了让 node 走系统 PATH，兼容 NodeSource 之外的安装方式。
+ExecStart=/usr/bin/env node --import tsx src/index.ts
+
+# 进程退出后自动拉起（Node 崩溃、被 OOM 杀掉都能自愈）
+Restart=always
+RestartSec=5
+
+; ---- 安全加固 ----
+; 禁止提权、隔离 /tmp、把 /usr /boot /etc 挂成只读。
+; 程序只写 WorkingDirectory 下的 data 目录，不受影响。
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
